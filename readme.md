@@ -2,6 +2,9 @@
 - Criar User model
 - Adicionar goORM
 
+Ideias futuras
+- bcrypt para senhas
+- gerar JWT
 
 
 ## docker
