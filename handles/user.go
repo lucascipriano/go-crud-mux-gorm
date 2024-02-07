@@ -38,7 +38,30 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func SearchAllUsers(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Busca todos os usuários"))
+	    db, err := initializers.ConnectDb()
+    if err != nil {
+        w.WriteHeader(http.StatusInternalServerError)
+        w.Write([]byte("Failed to connect to database"))
+        return
+    }
+
+    var users []models.UserModel
+    if err := db.Find(&users).Error; err != nil {
+        w.WriteHeader(http.StatusInternalServerError)
+        w.Write([]byte("Failed to fetch users from database"))
+        return
+    }
+
+    usersJSON, err := json.Marshal(users)
+    if err != nil {
+        w.WriteHeader(http.StatusInternalServerError)
+        w.Write([]byte("Failed to convert users to JSON"))
+        return
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusOK)
+    w.Write(usersJSON)
 }
 
 func SearchUser(w http.ResponseWriter, r *http.Request) {
