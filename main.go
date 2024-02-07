@@ -2,12 +2,17 @@ package main
 
 import (
 	"crud/handles"
+	"crud/initializers"
 	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
 )
+
+func init(){
+  initializers.ConnectDb()
+}
 
 func main() {
   router := mux.NewRouter()
