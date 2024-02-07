@@ -1,6 +1,6 @@
 - Criar rotas
+- Criar User model
 - Adicionar goORM
-
 
 
 
