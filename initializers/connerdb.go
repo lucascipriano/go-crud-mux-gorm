@@ -15,11 +15,11 @@ func ConnectDb() (*gorm.DB, error) {
 
 	DB, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		panic("Erro to connect db")
+		return nil, err
 	}
 	err = DB.AutoMigrate(&models.UserModel{})
 	if err != nil {
-		panic("failed to migrate database schema")
+		return nil, err
 	}
 	return DB, nil
 }
