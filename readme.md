@@ -1,6 +1,7 @@
 - Criar rotas
 - Criar User model
 - Adicionar goORM
+- CRUD completo
 
 Ideias futuras
 - bcrypt para senhas
