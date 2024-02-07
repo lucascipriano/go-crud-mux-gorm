@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -94,10 +95,65 @@ func SearchUser(w http.ResponseWriter, r *http.Request) {
 	w.Write(userJSON)
 
 }
+
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Atualiza um usuário"))
+	params := mux.Vars(r)
+	ID := params["id"]
+
+	db, err := initializers.ConnectDb()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Failed to connect to database"))
+		return
+	}
+	var existingUser models.UserModel
+	if err := db.First(&existingUser, ID).Error; err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("User not found"))
+		return
+	}
+	var updatedUser models.UserModel
+	if err := json.NewDecoder(r.Body).Decode(&updatedUser); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Failed to decode request body"))
+		return
+	}
+
+	existingUser.Name = updatedUser.Name
+	existingUser.Email = updatedUser.Email
+	existingUser.Password = updatedUser.Password
+	existingUser.UpdatedAt = time.Now()
+
+	if err := db.Save(&existingUser).Error; err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Failed to update user"))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("User updated successfully"))
+
 }
 
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Deleta usuário"))
+	params := mux.Vars(r)
+	ID := params["id"]
+
+	db, err := initializers.ConnectDb()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Failed to connect to database"))
+		return
+	}
+
+	var user models.UserModel
+	if err := db.Where("id = ?", ID).Delete(&user).Error; err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("User not found"))
+		return
+	}
+	w.Write([]byte("Deletado"))
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
 }
