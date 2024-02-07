@@ -5,8 +5,9 @@ import (
 	"crud/models"
 	"encoding/json"
 	"io"
-
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -65,7 +66,33 @@ func SearchAllUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func SearchUser(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Busca um usuário"))
+	params := mux.Vars(r)
+	ID := params["id"]
+
+	db, err := initializers.ConnectDb()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Failed to connect to database"))
+		return
+	}
+
+	var user models.UserModel
+	if err := db.Where("id = ?", ID).First(&user).Error; err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("User not found"))
+		return
+	}
+	userJSON, err := json.Marshal(user)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Failed to convert user to JSON"))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(userJSON)
+
 }
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Atualiza um usuário"))
